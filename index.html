@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yellowstone & the Wolf — Trophic Cascade</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══ ZONE 1 — Full-screen simulation ═══ -->
+  <section id="hero" aria-label="Interactive Yellowstone simulation">
+
+    <!-- Background crossfade layers -->
+    <div id="scene-container">
+      <div id="bg-before" class="bg-layer"></div>
+      <div id="bg-after"  class="bg-layer"></div>
+      <div id="layer-elk"    class="sprite-layer" aria-hidden="true"></div>
+      <div id="layer-wolves" class="sprite-layer" aria-hidden="true"></div>
+      <div id="layer-fauna"  class="sprite-layer" aria-hidden="true"></div>
+      <div id="callouts" aria-label="Feedback loop callouts"></div>
+    </div>
+
+    <!-- Header overlay (title + wolf control) -->
+    <header id="hero-header">
+      <h1 class="site-title">Yellowstone National Park</h1>
+      <div id="wolf-control">
+        <button id="btn-minus" aria-label="Remove wolf">−</button>
+        <div id="wolf-avatar"></div>
+        <span id="wolf-display" aria-live="polite">0</span>
+        <button id="btn-plus" aria-label="Add wolf">+</button>
+      </div>
+      <div id="wolf-bar-wrap">
+        <input id="wolf-slider" type="range" min="0" max="25" value="0"
+               aria-label="Wolf count" aria-valuemin="0" aria-valuemax="25" aria-valuenow="0">
+      </div>
+    </header>
+
+    <!-- Stat cards overlay (top-right) -->
+    <div id="stat-cards" aria-label="Ecosystem statistics">
+      <div class="stat-card" id="card-elk">
+        <span class="card-icon">🦌</span>
+        <div class="card-body">
+          <div class="card-title">Elk</div>
+          <div class="card-value" id="val-elk">120</div>
+          <canvas class="sparkline" id="spark-elk" width="70" height="22" aria-hidden="true"></canvas>
+        </div>
+        <div class="card-dot" id="dot-elk"></div>
+      </div>
+      <div class="stat-card" id="card-veg">
+        <span class="card-icon">🌿</span>
+        <div class="card-body">
+          <div class="card-title">Vegetation</div>
+          <div class="card-value" id="val-veg">4%</div>
+          <canvas class="sparkline" id="spark-veg" width="70" height="22" aria-hidden="true"></canvas>
+        </div>
+        <div class="card-dot" id="dot-veg"></div>
+      </div>
+      <div class="stat-card" id="card-river">
+        <span class="card-icon">🌊</span>
+        <div class="card-body">
+          <div class="card-title">River</div>
+          <div class="card-value" id="val-river">0 / 10</div>
+          <canvas class="sparkline" id="spark-river" width="70" height="22" aria-hidden="true"></canvas>
+        </div>
+        <div class="card-dot" id="dot-river"></div>
+      </div>
+      <div class="stat-card" id="card-bio">
+        <span class="card-icon">🦋</span>
+        <div class="card-body">
+          <div class="card-title">Biodiversity</div>
+          <div class="card-value" id="val-bio">0 pts</div>
+          <canvas class="sparkline" id="spark-bio" width="70" height="22" aria-hidden="true"></canvas>
+        </div>
+        <div class="card-dot" id="dot-bio"></div>
+      </div>
+    </div>
+
+    <!-- Bottom caption pill -->
+    <div id="hero-caption">
+      <p id="consequence-label" aria-live="polite">No predators — elk are taking over.</p>
+      <p id="scene-caption" class="scene-caption" aria-live="polite"></p>
+    </div>
+
+    <!-- Scroll hint -->
+    <div id="scroll-hint" aria-hidden="true">
+      <span>scroll to explore</span>
+      <div class="scroll-arrow"></div>
+    </div>
+
+  </section>
+
+  <!-- ═══ ZONE 2 — Graph & Timeline ═══ -->
+  <main id="zone2" aria-label="Ecosystem history and timeline">
+
+    <section id="graph-section">
+      <h2 class="section-heading">Ecosystem Over Time</h2>
+      <p class="section-sub">Each slider move adds a time step.</p>
+      <div id="chart-wrap">
+        <canvas id="eco-chart" aria-label="Multi-line ecosystem chart"></canvas>
+      </div>
+    </section>
+
+    <section id="timeline-section">
+      <h2 class="section-heading">How We Got Here</h2>
+      <div class="timeline-track">
+
+        <article class="timeline-card" data-era="1870s">
+          <div class="era-label">1870s</div>
+          <div class="era-thumb" id="thumb-1870s"></div>
+          <div class="era-copy">Wolves had lived here for thousands of years. They kept elk moving, plants growing, and the river healthy. Everything was connected.</div>
+          <div class="loop-badge b-loop">B loop — "The ecosystem ran itself like a thermostat."</div>
+          <canvas class="era-spark" width="100" height="32"></canvas>
+        </article>
+
+        <article class="timeline-card" data-era="1926">
+          <div class="era-label">1926</div>
+          <div class="era-thumb" id="thumb-1926"></div>
+          <div class="era-copy">By 1926, every wolf in Yellowstone had been killed by hunters and ranchers. Nobody realized what would happen next.</div>
+          <div class="loop-badge r-loop">R begins — "Without the balancing loop, a runaway loop took over."</div>
+          <canvas class="era-spark" width="100" height="32"></canvas>
+        </article>
+
+        <article class="timeline-card" data-era="1930s">
+          <div class="era-label">1930s – 1980s</div>
+          <div class="era-thumb" id="thumb-1930s"></div>
+          <div class="era-copy">Elk stopped moving. They ate the riverbanks bare. Without roots, the banks crumbled. The river spread wide and muddy. Beavers, birds, and fish disappeared.</div>
+          <div class="loop-badge r-loop">R loop — "Fewer plants → more erosion → even fewer plants. A vicious circle with no brake."</div>
+          <canvas class="era-spark" width="100" height="32"></canvas>
+        </article>
+
+        <article class="timeline-card" data-era="1995">
+          <div class="era-label">1995</div>
+          <div class="era-thumb" id="thumb-1995"></div>
+          <div class="era-copy">Scientists drove 14 wolves in from Canada. Almost immediately, elk changed their behavior — avoiding the riverbanks where wolves could ambush them. That fear changed everything.</div>
+          <div class="loop-badge b-loop">B loop — "The 'landscape of fear' created a new balancing loop."</div>
+          <canvas class="era-spark" width="100" height="32"></canvas>
+        </article>
+
+        <article class="timeline-card" data-era="today">
+          <div class="era-label">Today</div>
+          <div class="era-thumb" id="thumb-today"></div>
+          <div class="era-copy">The wolves didn't just change the elk. They changed the rivers. This is called a trophic cascade — one change at the top ripples all the way down.</div>
+          <div class="loop-badge rb-loop">R → B — "A vicious circle became a virtuous circle, then settled into balance."</div>
+          <canvas class="era-spark" width="100" height="32"></canvas>
+        </article>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script src="simulation.js"></script>
+  <script src="graph.js"></script>
+  <script src="audio.js"></script>
+  <!-- MediaPipe Hands -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1640029074/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="handtracking.js"></script>
+</body>
+</html>
