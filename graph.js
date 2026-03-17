@@ -178,20 +178,52 @@ const revealObserver = new IntersectionObserver((entries) => {
 
 timelineCards.forEach(card => revealObserver.observe(card));
 
-// ─── Era sparklines (static representative data) ──────────
-const eraData = {
-  '1870s': { elk: [60,58,62,57,60],  veg: [80,82,79,84,83],  river: [85,83,88,86,87]  },
-  '1926':  { elk: [60,65,70,78,85],  veg: [80,70,60,50,40],  river: [80,72,65,55,48]  },
-  '1930s': { elk: [90,95,100,105,110],veg:[35,28,22,16,10],  river: [40,33,25,18,12]  },
-  '1995':  { elk: [110,95,80,65,50], veg: [10,22,38,55,70],  river: [12,25,40,58,72]  },
-  'today': { elk: [50,42,38,35,32],  veg: [70,80,88,92,95],  river: [72,80,88,92,96]  },
+// ─── Era sparklines — mathematically correct feedback loop curves ──────────
+const N = 60; // number of sample points per sparkline
+
+function genCurve(fn) {
+  // Generate N points then normalise to 0–100 so drawSparkline can scale them
+  const pts = Array.from({ length: N }, (_, i) => fn(i));
+  const lo  = Math.min(...pts), hi = Math.max(...pts);
+  const range = hi - lo || 1;
+  return pts.map(v => ((v - lo) / range) * 100);
+}
+
+const eraCurves = {
+  // 1870s — Balancing loop: flat high line with tiny oscillations (sine wave)
+  '1870s': genCurve(t => {
+    const baseline = 75;
+    return baseline + 4 * Math.sin(t * 0.8);
+  }),
+
+  // 1926 — Reinforcing begins: exponential decay, slow at first
+  '1926': genCurve(t => {
+    const baseline = 85;
+    return baseline - 2 * Math.pow(t, 1.4);
+  }),
+
+  // 1930s–1980s — Reinforcing collapse: steep exponential decay
+  '1930s': genCurve(t => {
+    const baseline = 85;
+    return baseline * Math.exp(-0.08 * t);
+  }),
+
+  // 1995 — Balancing recovery: S-curve / logistic rising from low to high
+  '1995': genCurve(t => {
+    const low = 5, high = 90, midpoint = N * 0.45;
+    return low + (high - low) / (1 + Math.exp(-0.4 * (t - midpoint)));
+  }),
+
+  // Today — R→B settling: S-curve levelling off with dampened oscillations
+  'today': genCurve(t => {
+    const target = 80, decay = 60;
+    return target - decay * Math.exp(-0.1 * t) + 2 * Math.sin(t * 0.6) * Math.exp(-0.05 * t);
+  }),
 };
 
 document.querySelectorAll('.era-spark').forEach(canvas => {
   const era = canvas.closest('.timeline-card').dataset.era;
-  const d = eraData[era];
-  if (!d) return;
-  // Composite of veg + river
-  const combined = d.veg.map((v, i) => (v + d.river[i]) / 2);
-  drawSparkline(canvas, combined, '#2E8B7A');
+  const pts = eraCurves[era];
+  if (!pts) return;
+  drawSparkline(canvas, pts, '#2E8B7A');
 });
