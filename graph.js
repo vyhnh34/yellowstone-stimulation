@@ -181,49 +181,62 @@ timelineCards.forEach(card => revealObserver.observe(card));
 // ─── Era sparklines — mathematically correct feedback loop curves ──────────
 const N = 60; // number of sample points per sparkline
 
-function genCurve(fn) {
-  // Generate N points then normalise to 0–100 so drawSparkline can scale them
-  const pts = Array.from({ length: N }, (_, i) => fn(i));
-  const lo  = Math.min(...pts), hi = Math.max(...pts);
-  const range = hi - lo || 1;
-  return pts.map(v => ((v - lo) / range) * 100);
+// Raw generator — values in 0–100 domain, no auto-normalisation
+function genRaw(fn) {
+  return Array.from({ length: N }, (_, i) => fn(i));
+}
+
+// Fixed-scale sparkline draw: maps values against a fixed [0,100] domain
+// so the visual amplitude faithfully reflects the formula's amplitude.
+function drawEraSparkline(canvas, data, color) {
+  if (!canvas || data.length < 2) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const PAD = 2;
+  ctx.clearRect(0, 0, W, H);
+  const pts = data.map((v, i) => [
+    (i / (data.length - 1)) * W,
+    H - PAD - (Math.max(0, Math.min(100, v)) / 100) * (H - PAD * 2),
+  ]);
+  ctx.beginPath();
+  ctx.moveTo(...pts[0]);
+  pts.slice(1).forEach(p => ctx.lineTo(...p));
+  ctx.strokeStyle = color;
+  ctx.lineWidth   = 1.5;
+  ctx.lineJoin    = 'round';
+  ctx.stroke();
+  // Subtle fill under the line
+  ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+  ctx.fillStyle = color + '22';
+  ctx.fill();
 }
 
 const eraCurves = {
-  // 1870s — Balancing loop: flat high line with tiny oscillations (sine wave)
-  '1870s': genCurve(t => {
-    const baseline = 75;
-    return baseline + 4 * Math.sin(t * 0.8);
+  // 1870s — Balancing loop: flat near top with tiny sine oscillations
+  // Baseline 76, amplitude ±4 → stays in 72–80 band, looks flat
+  '1870s': genRaw(t => 76 + 4 * Math.sin(t * 0.8)),
+
+  // 1926 — Reinforcing begins: slow exponential decay from high
+  '1926': genRaw(t => Math.max(0, 85 - 2 * Math.pow(t, 1.4))),
+
+  // 1930s–1980s — Reinforcing collapse: steep exponential decay to near zero
+  '1930s': genRaw(t => 85 * Math.exp(-0.08 * t)),
+
+  // 1995 — Balancing recovery: logistic S-curve rising from low to high
+  '1995': genRaw(t => {
+    const low = 5, high = 90, mid = N * 0.45;
+    return low + (high - low) / (1 + Math.exp(-0.4 * (t - mid)));
   }),
 
-  // 1926 — Reinforcing begins: exponential decay, slow at first
-  '1926': genCurve(t => {
-    const baseline = 85;
-    return baseline - 2 * Math.pow(t, 1.4);
-  }),
-
-  // 1930s–1980s — Reinforcing collapse: steep exponential decay
-  '1930s': genCurve(t => {
-    const baseline = 85;
-    return baseline * Math.exp(-0.08 * t);
-  }),
-
-  // 1995 — Balancing recovery: S-curve / logistic rising from low to high
-  '1995': genCurve(t => {
-    const low = 5, high = 90, midpoint = N * 0.45;
-    return low + (high - low) / (1 + Math.exp(-0.4 * (t - midpoint)));
-  }),
-
-  // Today — R→B settling: S-curve levelling off with dampened oscillations
-  'today': genCurve(t => {
-    const target = 80, decay = 60;
-    return target - decay * Math.exp(-0.1 * t) + 2 * Math.sin(t * 0.6) * Math.exp(-0.05 * t);
-  }),
+  // Today — R→B settling: rises to target with dampened oscillations
+  'today': genRaw(t =>
+    80 - 60 * Math.exp(-0.1 * t) + 2 * Math.sin(t * 0.6) * Math.exp(-0.05 * t)
+  ),
 };
 
 document.querySelectorAll('.era-spark').forEach(canvas => {
   const era = canvas.closest('.timeline-card').dataset.era;
   const pts = eraCurves[era];
   if (!pts) return;
-  drawSparkline(canvas, pts, '#2E8B7A');
+  drawEraSparkline(canvas, pts, '#2E8B7A');
 });
