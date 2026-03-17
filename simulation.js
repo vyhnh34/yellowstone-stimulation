@@ -40,14 +40,34 @@ const ELK_POSITIONS = [
 
 // Wolf positions (image-relative, grouped on right meadow per reference)
 const WOLF_POSITIONS = [
+  // Core pack — first 8 wolves (original positions)
   { lx: 0.73, ly: 0.28 },
   { lx: 0.79, ly: 0.25 },
   { lx: 0.76, ly: 0.34 },
   { lx: 0.83, ly: 0.32 },
-  { lx: 0.86, ly: 0.28 },
+  { lx: 0.88, ly: 0.28 },
   { lx: 0.72, ly: 0.38 },
   { lx: 0.80, ly: 0.40 },
   { lx: 0.76, ly: 0.22 },
+  // Growing pack — wolves 9–16 (spread wider across the meadow)
+  { lx: 0.85, ly: 0.38 },
+  { lx: 0.91, ly: 0.33 },
+  { lx: 0.70, ly: 0.32 },
+  { lx: 0.74, ly: 0.44 },
+  { lx: 0.87, ly: 0.20 },
+  { lx: 0.87, ly: 0.42 },
+  { lx: 0.68, ly: 0.26 },
+  { lx: 0.78, ly: 0.46 },
+  // Full pack — wolves 17–25 (pack fills the whole right meadow)
+  { lx: 0.91, ly: 0.24 },
+  { lx: 0.93, ly: 0.40 },
+  { lx: 0.66, ly: 0.34 },
+  { lx: 0.84, ly: 0.46 },
+  { lx: 0.83, ly: 0.20 },
+  { lx: 0.71, ly: 0.44 },
+  { lx: 0.75, ly: 0.50 },
+  { lx: 0.94, ly: 0.30 },
+  { lx: 0.69, ly: 0.20 },
 ];
 
 // Fauna positions (image-relative, matched to reference screenshot)
@@ -64,18 +84,17 @@ const FAUNA_POSITIONS = {
 // ─── Consequence labels per threshold ────────────────────
 const CONSEQUENCES = [
   { min: 0,  max: 0,  text: "No predators, elks are taking over.",          color: 'var(--danger-red)' },
-  { min: 1,  max: 5,  text: "A few wolves, the elk are starting to worry.", color: 'var(--elk-amber)' },
+  { min: 1,  max: 5,  text: "A few wolves, elks are starting to worry.", color: 'var(--elk-amber)' },
   { min: 6,  max: 10, text: "The ecology of fear is working.",               color: 'var(--elk-amber)' },
-  { min: 11, max: 15, text: "Plants are growing back,fast.",               color: 'var(--vegetation-green)' },
-  { min: 16, max: 20, text: "The whole ecosystem is waking up.",             color: 'var(--river-teal)' },
-  { min: 21, max: 25, text: "One predator. A thousand effects.",             color: 'var(--river-teal)' },
+  { min: 11, max: 15, text: "Plants are growing back, fast.",               color: 'var(--vegetation-green)' },
+  { min: 16, max: 20, text: "The whole ecosystem is reviving.",             color: 'var(--river-teal)' },
+  { min: 21, max: 25, text: "One predator. Many effects.",             color: 'var(--river-teal)' },
 ];
 
 // ─── Scene captions per threshold ────────────────────────
 const CAPTIONS = [
   { min: 0,  max: 0,  text: '' },
-  { min: 1,  max: 5,  text: 'The elk just got nervous.' },
-  { min: 6,  max: 10, text: 'Scared elk stop grazing by the river.' },
+  { min: 6,  max: 10, text: 'Scared elks stop grazing by the river.' },
   { min: 11, max: 25, text: '' },
 ];
 
@@ -83,7 +102,7 @@ const CAPTIONS = [
 const CALLOUT_POSITIONS = [
   {
     id: 'callout-elk',
-    label: 'B loop',
+    label: 'Balancing Loop',
     type: 'b',
     lx: 0.70, ly: 0.45,
     showWhen: () => true,
@@ -92,7 +111,7 @@ const CALLOUT_POSITIONS = [
   },
   {
     id: 'callout-erosion',
-    label: 'R loop',
+    label: 'Reinforcing Loop',
     type: 'r',
     lx: 0.30, ly: 0.62,
     showWhen: (w) => w <= 5,
@@ -101,7 +120,7 @@ const CALLOUT_POSITIONS = [
   },
   {
     id: 'callout-veg',
-    label: 'R loop',
+    label: 'Reinforcing Loop',
     type: 'r',
     lx: 0.18, ly: 0.48,
     showWhen: (w) => w >= 6,
@@ -110,7 +129,7 @@ const CALLOUT_POSITIONS = [
   },
   {
     id: 'callout-beaver',
-    label: 'B loop',
+    label: 'Balancing Loop',
     type: 'b',
     lx: 0.50, ly: 0.40,
     showWhen: (w) => w >= 8,

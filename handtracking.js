@@ -47,11 +47,11 @@
     hint.innerHTML = `
       <div class="ht-row">
         <img src="wolf.png" class="ht-icon-img" alt="wolf card">
-        <span><strong>Right hand</strong> — hold the printed wolf card</span>
+        <span><strong>Left hand</strong> — hold the printed wolf card</span>
       </div>
       <div class="ht-row">
         <span class="ht-hand-icon">✊</span>
-        <span><strong>Left hand</strong> pinched · move <em>up</em> = more wolves</span>
+        <span><strong>Right hand</strong> pinched · move <em>up</em> = more wolves</span>
       </div>`;
     document.body.appendChild(hint);
 
@@ -174,25 +174,30 @@
       return setStatus('👐 Show both hands to the camera');
     }
     if (!wolfCard) {
-      return setStatus('🐺 Right hand: hold the wolf card');
+      return setStatus('🐺 Left hand: hold the wolf card');
     }
     if (!controlHand) {
-      return setStatus('✅ Wolf card detected — raise left hand');
+      return setStatus('✅ Wolf card detected — raise right hand');
     }
 
     const pinched = fingersClosedTogether(controlHand);
     if (!pinched) {
-      return setStatus('✅ Wolf card ready — pinch left fingers');
+      return setStatus('✅ Wolf card ready — pinch right fingers');
     }
 
-    /* Map left wrist Y (0=top → max wolves, 1=bottom → 0 wolves) */
-    const palmY   = controlHand[0].y;
-    const count   = Math.max(0, Math.min(WOLF_MAX,
-                      Math.round((1 - palmY) * WOLF_MAX)));
+    /* Map left wrist Y to wolf count.
+       Y_TOP = palmY when hand is raised high (~15% from top of frame)
+       Y_BOT = palmY when hand is at resting/low position (~80% from top)
+       Clamping this range to 0–WOLF_MAX means the full slider is reachable
+       without the user needing to leave the camera frame. */
+    const palmY = controlHand[0].y;
+    const Y_TOP = 0.15, Y_BOT = 0.80;
+    const t     = Math.max(0, Math.min(1, (Y_BOT - palmY) / (Y_BOT - Y_TOP)));
+    const count = Math.round(t * WOLF_MAX);
 
     setStatus(`🐺 × ${count}`);
     setWolfCount(count);
-    drawLevelBar(palmY, count);
+    drawLevelBar(t, count);
   }
 
   /* ── Gesture: fingers closed together ──────────────────── */
@@ -234,27 +239,38 @@
   }
 
   /* ── Canvas: vertical level bar ────────────────────────── */
-  function drawLevelBar(palmY, count) {
+  // t = 0 (hand low) → 1 (hand high), already clamped
+  function drawLevelBar(t, count) {
     const W = PREVIEW_W, H = PREVIEW_H;
     const bx = W - 14, bTop = H * 0.15, bH = H * 0.70;
-    const fillH = (1 - palmY) * bH;
+    const fillH = t * bH;
     const fillY = bTop + bH - fillH;
 
+    // Track background
     ctx2d.fillStyle = 'rgba(0,0,0,0.30)';
     ctx2d.beginPath();
     ctx2d.roundRect(bx, bTop, 8, bH, 4);
     ctx2d.fill();
 
+    // Track fill
     ctx2d.fillStyle = '#5ba8e0';
     ctx2d.beginPath();
     ctx2d.roundRect(bx, fillY, 8, fillH, 4);
     ctx2d.fill();
 
-    ctx2d.fillStyle   = '#fff';
-    ctx2d.font        = 'bold 9px Inter, sans-serif';
-    ctx2d.textAlign   = 'right';
+    /* The canvas has CSS transform: scaleX(-1), which mirrors everything drawn
+       on it — including text, making digits appear backwards.
+       Fix: apply an inverse x-flip in the canvas context so the double-mirror
+       (context × CSS) cancels out and the number reads correctly. */
+    const labelY = Math.max(bTop + 7, Math.min(bTop + bH - 7, fillY));
+    ctx2d.save();
+    ctx2d.transform(-1, 0, 0, 1, W, 0); // maps drawn-x → canvas (W - x) → visual x ✓
+    ctx2d.fillStyle    = '#fff';
+    ctx2d.font         = 'bold 9px Inter, sans-serif';
+    ctx2d.textAlign    = 'left';
     ctx2d.textBaseline = 'middle';
-    ctx2d.fillText(count, bx - 3, fillY);
+    ctx2d.fillText(count, 26, labelY);   // visual x=26, just right of bar at visual x=14
+    ctx2d.restore();
   }
 
   /* ── Wolf count setter ──────────────────────────────────── */

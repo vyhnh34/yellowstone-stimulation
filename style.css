@@ -312,12 +312,12 @@ body {
 
 /* ── Scroll hint ─────────────────────────────────────── */
 #scroll-hint {
+  display: none !important;
   position: absolute;
   bottom: 14px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 16;
-  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 4px;
@@ -548,3 +548,25 @@ font-family: var(--font-hand)
 }
 .ht-icon-img { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
 .ht-hand-icon { font-size: 22px; flex-shrink: 0; width: 28px; text-align: center; }
+
+/* ── Audio mute button ──────────────────────────────────────── */
+
+#audio-mute {
+  position: absolute;
+  top: 14px; right: 152px;
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 14px;
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(44,36,22,0.18);
+  border-radius: 24px;
+  font-family: var(--font-body);
+  font-size: 13px; font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  z-index: 50;
+}
+#audio-mute:hover { background: rgba(255,255,255,0.96); border-color: var(--wolf-blue); }
+#audio-mute.muted { color: rgba(44,36,22,0.45); border-color: rgba(44,36,22,0.12); }
+#audio-mute svg { width: 16px; height: 16px; flex-shrink: 0; }
