@@ -216,8 +216,9 @@ const eraCurves = {
   // Baseline 76, amplitude ±1.5 → nearly invisible wiggles
   '1870s': genRaw(t => 76 + 1.5 * Math.sin(t * 0.8)),
 
-  // 1926 — Reinforcing begins: slow exponential decay from high
-  '1926': genRaw(t => Math.max(0, 85 - 2 * Math.pow(t, 1.4))),
+  // 1926 — Reinforcing begins: flat for first 60%, then gently bends down
+  // Ecosystem wouldn't visibly decline for years after wolves disappeared
+  '1926': genRaw(t => t < 20 ? 80 - 0.01 * t : 80 - 0.01 * 20 - 0.003 * Math.pow(t - 20, 2)),
 
   // 1930s–1980s — Reinforcing collapse: steep exponential decay to near zero
   '1930s': genRaw(t => 85 * Math.exp(-0.08 * t)),
