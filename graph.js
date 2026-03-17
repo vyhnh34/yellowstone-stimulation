@@ -212,9 +212,9 @@ function drawEraSparkline(canvas, data, color) {
 }
 
 const eraCurves = {
-  // 1870s — Balancing loop: very flat with barely perceptible oscillations
-  // Baseline 76, amplitude ±1.5 → nearly invisible wiggles
-  '1870s': genRaw(t => 76 + 1.5 * Math.sin(t * 0.8)),
+  // 1870s — Balancing loop: flat near top with small sine oscillations
+  // Baseline 76, amplitude ±4 → stays in 72–80 band on fixed 0–100 scale
+  '1870s': genRaw(t => 76 + 4 * Math.sin(t * 0.8)),
 
   // 1926 — Reinforcing begins: nearly flat first ~20%, then a clear but unhurried decline
   // Ends around 50 (half the starting value) — visibly declining but not catastrophic
