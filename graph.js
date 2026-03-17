@@ -11,7 +11,7 @@ const chartData = {
   labels: [],
   datasets: [
     {
-      label: 'Wolves',
+      label: 'Wolves (×4)',
       data: [],
       borderColor: '#3B6D8C',
       backgroundColor: '#3B6D8C18',
